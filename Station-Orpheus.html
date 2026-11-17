@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Station Orpheus LO02</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="css/station.css">
+<link rel="stylesheet" href="css/cinema.css">
+
+</head>
+<body>
+<canvas id="starfield" aria-hidden="true"></canvas>
+
+<header class="hud" id="hud">
+  <a class="hud-brand" href="#hub" aria-label="Retour au pont de la station">
+    <span class="hud-sigil" aria-hidden="true"></span>
+    <span class="hud-name">ORPHEUS<small>LO02 · station de révision</small></span>
+  </a>
+  <div class="hud-stats" id="hud-stats"></div>
+</header>
+
+<main id="view" class="view" tabindex="-1">
+  <noscript><p class="panel">La station a besoin de JavaScript pour démarrer.</p></noscript>
+</main>
+
+<div id="toasts" class="toasts" aria-live="polite"></div>
+<div id="overlay" class="overlay" hidden></div>
+
+<script src="js/core/util.js"></script>
+<script src="js/core/store.js"></script>
+<script src="js/core/fx.js"></script>
+<script src="js/core/uml-render.js"></script>
+<script src="js/core/seq-render.js"></script>
+<script src="js/core/ui.js"></script>
+<script src="js/engine/verdict-engine.js"></script>
+<script src="js/data/universes.js"></script>
+<script src="js/data/lore.js"></script>
+<script src="js/data/codex.js"></script>
+<script src="js/data/flashcards.js"></script>
+<script src="js/data/dossiers.js"></script>
+<script src="js/data/uml.js"></script>
+<script src="js/data/uml-lessons.js"></script>
+<script src="js/data/seq-lessons.js"></script>
+<script src="js/data/patterns-lessons.js"></script>
+<script src="js/data/forge.js"></script>
+<script src="js/data/exams.js"></script>
+<script src="js/data/story.js"></script>
+<script src="js/data/campaign.js"></script>
+<script src="js/data/voices.js"></script>
+<script src="js/core/cinema-shots.js"></script>
+<script src="js/core/cinema.js"></script>
+<script src="js/core/campaign.js"></script>
+<script src="js/modes/hub.js"></script>
+<script src="js/modes/codex.js"></script>
+<script src="js/modes/reacteur.js"></script>
+<script src="js/modes/notation.js"></script>
+<script src="js/modes/plans.js"></script>
+<script src="js/modes/patrons.js"></script>
+<script src="js/modes/forge.js"></script>
+<script src="js/modes/memoire.js"></script>
+<script src="js/modes/saut.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

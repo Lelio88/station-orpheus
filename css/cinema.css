@@ -1,0 +1,186 @@
+/*
+ * cinema.css — Habillage et animations des cinématiques (js/core/cinema*.js).
+ *
+ * Deux familles : .cine-* pour l'interface du lecteur (bandes noires,
+ * sous-titres, contrôles), .cn-* pour le motion design des décors SVG.
+ * Choix : les animations SVG passent par des transformations CSS avec
+ * transform-origin en pixels du repère 1600 × 900 (posé en style inline).
+ * Invariant : avec prefers-reduced-motion, rotations, secousses et flashs
+ * s'arrêtent ; seuls les fondus restent.
+ */
+:root { --rust: #ff5a4f; }
+
+body.cine-open { overflow: hidden; }
+.cine {
+  position: fixed; inset: 0; z-index: 100; background: #02040a; color: var(--ink);
+  animation: cine-in 0.6s var(--ease) both; overflow: hidden;
+}
+.cine.cine-leave { animation: cine-out 0.55s ease both; }
+@keyframes cine-in { from { opacity: 0; } }
+@keyframes cine-out { to { opacity: 0; } }
+.cine-stage { position: absolute; inset: 0; }
+.cine-svg { width: 100%; height: 100%; display: block; }
+.cine-bar { position: absolute; left: 0; right: 0; height: 9vh; background: #000; z-index: 2; animation: cine-bar 0.9s var(--ease) both; }
+.cine-bar.top { top: 0; transform-origin: top; }
+.cine-bar.bottom { bottom: 0; transform-origin: bottom; }
+@keyframes cine-bar { from { transform: scaleY(0); } }
+
+.cine-top {
+  position: absolute; top: 0; left: 0; right: 0; z-index: 3; height: 9vh; min-height: 48px;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 0 max(16px, 3vw);
+}
+.cine-place { display: flex; align-items: center; gap: 10px; font: 600 clamp(11px, 1.4vw, 14px) var(--f-display); letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-dim); min-width: 0; }
+.cine-place span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cine-rec { width: 9px; height: 9px; border-radius: 50%; background: var(--rust); flex: none; animation: cn-blink 1.2s steps(2) infinite; }
+.cine-ctrl { display: flex; gap: 6px; flex: none; }
+.cine-btn {
+  font: 600 13px var(--f-display); letter-spacing: 0.06em; color: var(--ink); background: rgba(21, 31, 56, 0.75);
+  border: 1px solid var(--line); padding: 8px 12px; cursor: pointer; min-height: 36px;
+}
+.cine-btn:hover, .cine-btn:focus-visible { border-color: var(--vega); color: var(--vega); outline: none; }
+
+.cine-sub {
+  position: absolute; left: 50%; bottom: calc(9vh + 18px); transform: translateX(-50%); z-index: 3;
+  width: min(960px, calc(100% - 32px)); padding: 14px 20px 16px; background: rgba(4, 7, 16, 0.78);
+  border-left: 3px solid var(--line); backdrop-filter: blur(4px); opacity: 0; transition: opacity 0.3s, border-color 0.3s;
+}
+.cine.talking .cine-sub { opacity: 1; }
+.cine[data-who="vega"] .cine-sub { border-color: var(--vega); }
+.cine[data-who="delaunay"] .cine-sub { border-color: var(--sodium); }
+.cine[data-who="rouille"] .cine-sub { border-color: var(--rust); }
+.cine[data-who="cadet"] .cine-sub { border-color: var(--ink); }
+.cine-speaker { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+.cine-who { display: flex; align-items: baseline; gap: 10px; }
+.cine-who b { font: 700 15px var(--f-display); letter-spacing: 0.1em; text-transform: uppercase; }
+.cine-who span { font-size: 13px; color: var(--ink-faint); }
+.cine-wave { display: flex; align-items: center; gap: 3px; height: 18px; --env: 0; }
+.cine-wave i { width: 3px; height: calc(3px + var(--env) * 15px); background: currentColor; color: var(--ink-dim); transition: height 0.06s linear; }
+.cine-wave i:nth-child(2), .cine-wave i:nth-child(4) { height: calc(3px + var(--env) * 10px); }
+.cine[data-who="vega"] .cine-wave i { color: var(--vega); }
+.cine[data-who="delaunay"] .cine-wave i { color: var(--sodium); }
+.cine[data-who="rouille"] .cine-wave i { color: var(--rust); }
+.cine-line { margin: 0; font: 400 clamp(17px, 2.1vw, 22px)/1.45 var(--f-body); }
+.cine[data-who="rouille"] .cine-line { font-style: italic; color: #ffd2ce; }
+.cine-ghost { color: transparent; }
+
+.cine-progress { position: absolute; left: 0; right: 0; bottom: 0; z-index: 3; display: flex; gap: 3px; padding: 0 max(16px, 3vw) 12px; }
+.cine-progress i { flex: 1; height: 3px; background: rgba(255, 255, 255, 0.12); }
+.cine-progress i.done { background: var(--ink-faint); }
+.cine-progress i.on { background: var(--sodium); }
+.cine.paused .cine-stage { filter: saturate(0.4) brightness(0.7); }
+
+.cine-gate {
+  position: absolute; inset: 0; z-index: 5; display: grid; place-content: center; justify-items: center; gap: 14px; text-align: center;
+  padding: 16px; background: radial-gradient(circle at 50% 45%, rgba(255, 181, 71, 0.12), rgba(2, 4, 10, 0.96) 60%);
+}
+.cine-gate h2 { margin: 0; font-size: clamp(28px, 5vw, 46px); }
+
+@media (max-width: 640px) {
+  .cine-btn { padding: 6px 9px; font-size: 12px; }
+  .cine-ctrl .cine-btn[aria-label="Pause"] { display: none; }
+  .cine-sub { bottom: calc(9vh + 10px); padding: 10px 14px 12px; }
+  .cine-place { letter-spacing: 0.06em; }
+}
+
+/* ---------------------------------------------------------------- décors */
+.cn-display { font-family: var(--f-display); font-weight: 700; letter-spacing: 0.08em; }
+.cn-body { font-family: var(--f-body); }
+.cn-mono { font-family: var(--f-mono); font-variant-ligatures: none; font-feature-settings: "liga" 0, "calt" 0; white-space: pre; }
+
+.cn-layer { animation: cn-fadein 0.6s ease both; transform-origin: 800px 450px; }
+.cn-layer.cn-out { animation: cn-fadeout 0.55s ease both; }
+.cn-cam-push { animation: cn-fadein 0.6s ease both, cn-push 14s linear both; }
+.cn-cam-drift { animation: cn-fadein 0.6s ease both, cn-drift-cam 14s linear both; }
+.cn-layer.cn-out { animation: cn-fadeout 0.55s ease both; }
+@keyframes cn-fadein { from { opacity: 0; } }
+@keyframes cn-fadeout { to { opacity: 0; } }
+@keyframes cn-push { from { transform: scale(1); } to { transform: scale(1.09); } }
+@keyframes cn-drift-cam { from { transform: scale(1.06) translateX(-18px); } to { transform: scale(1.06) translateX(18px); } }
+
+.cn-spin { animation: cn-spin 20s linear infinite; }
+.cn-spin-slow { animation: cn-spin 60s linear infinite; }
+.cn-spin-rev { animation: cn-spin 34s linear infinite reverse; }
+@keyframes cn-spin { to { transform: rotate(360deg); } }
+.cn-pulse { animation: cn-pulse 2.4s ease-in-out infinite; }
+@keyframes cn-pulse { 50% { opacity: 0.55; } }
+.cn-blink { animation: cn-blink 1.4s steps(2) infinite; }
+@keyframes cn-blink { 50% { opacity: 0.15; } }
+.cn-alarm { opacity: 0; animation: cn-alarm 1.6s ease-in-out infinite; mix-blend-mode: screen; }
+@keyframes cn-alarm { 50% { opacity: 0.16; } }
+.cn-float { animation: cn-float 7s ease-in-out infinite; }
+@keyframes cn-float { 50% { transform: translateY(-10px) rotate(0.6deg); } }
+.cn-breathe { animation: cn-float 5s ease-in-out infinite; }
+.cn-drift { animation: cn-drift 40s linear infinite; }
+@keyframes cn-drift { to { transform: translateX(-160px); } }
+.cn-drift-slow { animation: cn-drift 90s linear infinite; }
+.cn-warpstars { animation: cn-warpstars 1.6s linear infinite; }
+@keyframes cn-warpstars { to { transform: translateX(-200px); } }
+
+.cn-title-in { animation: cn-title 1.6s var(--ease) both; }
+@keyframes cn-title { from { opacity: 0; letter-spacing: 0.6em; filter: blur(8px); } }
+.cn-rise { animation: cn-rise 0.7s var(--ease) both; }
+@keyframes cn-rise { from { opacity: 0; transform: translateY(18px); } }
+.cn-pop { animation: cn-pop 0.6s var(--ease) both; transform-box: fill-box; transform-origin: center; }
+@keyframes cn-pop { from { opacity: 0; transform: scale(0.4); } }
+.cn-wipe { animation: cn-wipe 1.4s var(--ease) both; }
+@keyframes cn-wipe { from { transform: scaleX(0); } }
+.cn-draw { stroke-dasharray: 1; stroke-dashoffset: 1; animation: cn-draw 1.4s ease forwards; }
+@keyframes cn-draw { to { stroke-dashoffset: 0; } }
+.cn-ghost { opacity: 0; animation: cn-ghost 3s ease both; }
+@keyframes cn-ghost { 30% { opacity: 0.7; } to { opacity: 0.12; } }
+.cn-smudge { animation: cn-smudge 1.2s ease forwards; }
+@keyframes cn-smudge { to { opacity: 0.85; } }
+.cn-dissolve { animation: cn-dissolve 6s ease forwards; }
+@keyframes cn-dissolve { to { opacity: 0.05; transform: translateX(80px); } }
+
+.cn-flicker { animation: cn-flicker 2.2s steps(1) infinite; }
+@keyframes cn-flicker { 0%, 100% { opacity: 1; } 8% { opacity: 0.4; } 9% { opacity: 1; } 47% { opacity: 0.7; transform: translateX(6px); } 48% { opacity: 1; transform: none; } 72% { opacity: 0.25; } 74% { opacity: 1; } }
+.cn-flicker-soft { animation: cn-flicker-soft 3s steps(1) infinite; }
+@keyframes cn-flicker-soft { 0%, 100% { opacity: 0.95; } 33% { opacity: 0.8; } 34% { opacity: 0.95; } 61% { opacity: 0.85; transform: translateX(3px); } 62% { transform: none; } }
+.cn-flicker-hard { animation: cn-flicker 0.5s steps(1) infinite; opacity: 0.5; }
+.cn-glitch { animation: cn-glitch 1.8s steps(1) infinite; }
+@keyframes cn-glitch { 0%, 100% { opacity: 0; } 10% { opacity: 0.8; transform: translateX(-20px); } 14% { opacity: 0; } 55% { opacity: 0.6; transform: translateX(30px); } 58% { opacity: 0; } }
+
+.cn-storm { animation: cn-storm 5s linear both; }
+@keyframes cn-storm { from { transform: translateX(0); } to { transform: translateX(1300px); } }
+.cn-storm-hit { transform: translateX(1300px); animation: cn-storm-hit 2.4s ease-out both; }
+@keyframes cn-storm-hit { from { transform: translateX(1300px); } to { transform: translateX(2600px); } }
+.cn-flash { animation: cn-flash 1.4s ease-out both; }
+@keyframes cn-flash { from { opacity: 1; } to { opacity: 0; } }
+.cn-shake { animation: cn-shake 0.6s linear; }
+@keyframes cn-shake { 10%, 50%, 90% { transform: translate(-14px, 6px); } 30%, 70% { transform: translate(14px, -8px); } }
+.cn-warp { animation: cn-warp 3.2s linear infinite; }
+@keyframes cn-warp { from { transform: scale(0.1); opacity: 0; } 30% { opacity: 1; } to { transform: scale(1.05); opacity: 0; } }
+.cn-spark { animation: cn-spark 1.8s ease-out infinite; }
+@keyframes cn-spark { from { transform: translate(0, 0); opacity: 1; } to { transform: translate(var(--sx), var(--sy)); opacity: 0; } }
+.cn-sorting { animation: cn-sort 1.3s var(--ease) both; }
+@keyframes cn-sort { from { transform: var(--scatter); } to { transform: none; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .cn-spin, .cn-spin-slow, .cn-spin-rev, .cn-float, .cn-breathe, .cn-drift, .cn-drift-slow, .cn-warpstars,
+  .cn-flicker, .cn-flicker-soft, .cn-flicker-hard, .cn-glitch, .cn-shake, .cn-warp, .cn-spark, .cn-alarm, .cn-blink { animation: none !important; }
+  .cn-cam-push, .cn-cam-drift { animation: cn-fadein 0.6s ease both; }
+  .cn-flash { display: none; }
+}
+
+/* Salle de projection (Journal de bord). */
+button.list-item { width: 100%; text-align: left; font: inherit; color: inherit; cursor: pointer; }
+.list-item.locked { opacity: 0.5; }
+
+/* Campagne : panneau de mission du pont, bandeau de réussite, modules verrouillés. */
+.mission-panel { margin-bottom: var(--gap); border-color: var(--sodium-deep); }
+.mission-panel h2 { margin: 4px 0 10px; }
+.mission-track { display: flex; gap: 4px; margin: 0 0 12px; }
+.mission-track i { flex: 1; height: 6px; background: var(--hull-3); }
+.mission-track i.done { background: var(--ok); }
+.mission-track i.on { background: var(--sodium); box-shadow: 0 0 10px var(--sodium); }
+.mission-score { display: grid; gap: 6px; margin: 10px 0; }
+.module.locked { opacity: 0.45; cursor: not-allowed; filter: grayscale(0.7); }
+.mission-banner {
+  position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%); z-index: 60; width: min(560px, calc(100% - 32px));
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 16px;
+  background: var(--hull-2); border: 1px solid var(--sodium); box-shadow: 0 0 30px rgba(255, 181, 71, 0.35);
+  animation: cn-rise 0.6s var(--ease) both;
+}
+.mission-banner b { display: block; font-family: var(--f-display); }
+@media (max-width: 520px) { .mission-banner { flex-direction: column; align-items: stretch; text-align: center; } }
