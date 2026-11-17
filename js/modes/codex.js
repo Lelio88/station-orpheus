@@ -39,7 +39,7 @@
         O.store.gainXP(score > prev ? 8 * good : good, 'Test de mémoire');
         O.util.add(mount, 
           h('h3', null, 'Résultat : ' + good + ' / ' + qs.length),
-          O.ui.vega(score >= 0.99 ? 'Fragment restauré intégralement. Passe au chapitre suivant.' : score >= ((O.campaign && O.campaign.NEED) || 0.7) ? 'Test réussi. Relis l'explication de la question manquée : c'est elle que tu risques de rater le jour du médian.' : 'Relis les encadrés du chapitre puis retente le test : la mémoire se consolide en se trompant.'),
+          O.ui.vega(score >= 0.99 ? 'Fragment restauré intégralement. Passe au chapitre suivant.' : score >= ((O.campaign && O.campaign.NEED) || 0.7) ? 'Test réussi. Relis l’explication de la question manquée : c’est elle que tu risques de rater le jour du médian.' : 'Relis les encadrés du chapitre puis retente le test : la mémoire se consolide en se trompant.'),
           h('div', { class: 'row' }, h('button', { class: 'btn', type: 'button', onclick: () => { i = 0; good = 0; step(); } }, 'Refaire le test')));
         return;
       }
