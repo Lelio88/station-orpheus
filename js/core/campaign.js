@@ -14,7 +14,9 @@
  *    réussies avec la progression existante sont validées sans cinématique ;
  *  - si une réussite valide d'un coup plusieurs missions (exercices déjà faits
  *    plus loin dans la liste), seule la transition de la dernière est jouée :
- *    c'est elle qui annonce la mission en cours, et les scènes ne s'enchaînent pas.
+ *    c'est elle qui annonce la mission en cours, et les scènes ne s'enchaînent pas ;
+ *  - la transition finie ramène au pont, qui montre la mission suivante ; l'écran
+ *    d'exercice de la mission en cours porte un rappel de son objectif (strip).
  * Invariants : les missions se valident strictement dans l'ordre ; un module
  * est accessible dès que sa première mission est la mission en cours ; le
  * pont et le Journal de bord restent toujours accessibles.
@@ -95,7 +97,13 @@
     O.store.update((s) => { s.campaign.pending = []; });
     banner();
     if (!list.length) { if (then) then(); return; }
-    list.forEach((id, i) => O.cinema.play(id, i === list.length - 1 ? { onEnd: () => { if (then) then(); else if (location.hash === '' || location.hash === '#hub') root.dispatchEvent(new HashChangeEvent('hashchange')); } } : {}));
+    list.forEach((id, i) => O.cinema.play(id, i === list.length - 1 ? { onEnd: () => { if (then) then(); else toHub(); } } : {}));
+  }
+
+  /** Après une transition, le pont affiche la mission suivante et son bouton de lancement. */
+  function toHub() {
+    if (location.hash === '' || location.hash === '#hub') root.dispatchEvent(new HashChangeEvent('hashchange'));
+    else location.hash = '#hub';
   }
 
   function banner() {
@@ -150,6 +158,21 @@
       h('div', { class: 'row' }, h('button', { class: 'btn primary', type: 'button', onclick: () => launch(m) }, sc > 0 ? 'Retenter la mission' : 'Lancer la mission')));
   }
 
+  /**
+   * Rappel de la mission en cours, affiché en tête de l'écran vers lequel elle
+   * mène (route sans « # »). Un élément #mission-target dans la vue reçoit un
+   * bouton pour y descendre (le test en bas d'un chapitre du Codex, par exemple).
+   */
+  function strip(route, view) {
+    const m = current();
+    if (!m || cs().pending.length || m.route !== '#' + route) return null;
+    const target = view.querySelector('#mission-target');
+    return h('section', { class: 'panel chamfer mission-strip', role: 'note' },
+      h('span', { class: 'eyebrow' }, 'Mission ' + String(currentIndex() + 1).padStart(2, '0') + ' / ' + M().length + ' en cours · réussite à ' + O.util.pct(need(m)) + ' %'),
+      p(m.goal),
+      target ? h('div', { class: 'row' }, h('button', { class: 'btn small', type: 'button', onclick: () => target.scrollIntoView({ behavior: 'smooth', block: 'start' }) }, 'Aller au test ↓')) : null);
+  }
+
   /** Écran d'un module encore verrouillé ; renvoie true si la route est bloquée. */
   function guard(name, view) {
     if (unlocked(name)) return false;
@@ -172,5 +195,5 @@
     O.store.onChange(check);
   }
 
-  O.campaign = { start, check, panel, guard, unlocked, current, currentIndex, finished, launch, playPending, opener };
+  O.campaign = { NEED, start, check, panel, strip, guard, unlocked, current, currentIndex, finished, launch, playPending, opener };
 })(window);

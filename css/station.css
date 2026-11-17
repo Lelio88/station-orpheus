@@ -293,6 +293,10 @@ code, pre, .mono, textarea, .uml-wrap text { font-variant-ligatures: none; font-
 .seq-guard { fill: var(--sodium); font: 600 12px var(--f-mono); }
 .seq-sep { stroke: var(--vega); stroke-width: 1; stroke-dasharray: 6 4; }
 
+/* ---------- Rappel de mission ---------- */
+.mission-strip { border-left: 3px solid var(--sodium); }
+.mission-strip p { margin: 6px 0; }
+
 /* ---------- Forge ---------- */
 .parsons { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--gap); }
 .p-zone { background: var(--code-bg); border: 1px dashed var(--line); min-height: 120px; padding: 8px; display: flex; flex-direction: column; gap: 4px; }
@@ -411,6 +415,8 @@ input[type="text"]:focus, input[type="date"]:focus { border-color: var(--sodium)
   .hud-stats .hud-chip:nth-child(3) { display: none; }
   .hud-name { font-size: 0.95rem; letter-spacing: 0.1em; }
   .verdict-btns { grid-template-columns: minmax(0, 1fr); }
+  .p-line { white-space: pre-wrap; overflow-x: visible; font-size: 0.78rem; }
+  .tabs button { padding: 10px 9px; font-size: 0.8rem; letter-spacing: 0.02em; }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }

@@ -40,6 +40,8 @@
     try {
       if (O.campaign && O.campaign.guard(name, view)) { window.scrollTo(0, 0); return; }
       mode(view, param);
+      const strip = O.campaign && O.campaign.strip(raw, view);
+      if (strip) view.insertBefore(strip, view.children[1] || null);
       if (O.store.state.name && O.story) O.story.onRoute(O.modes[name] ? name : 'hub');
     } catch (err) {
       view.innerHTML = '';

@@ -179,7 +179,7 @@
     else {
       const go = h('button', { class: 'btn primary', type: 'button' }, 'Établir la liaison');
       const gate = h('div', { class: 'cine-gate' }, h('span', { class: 'eyebrow' }, 'Transmission entrante'), h('h2', null, scene.title),
-        h('p', { class: 'dim' }, 'Mets le son : les personnages parlent. Échap pour passer.'), go);
+        h('p', { class: 'dim' }, 'Mets le son : les personnages parlent. ' + (root.matchMedia && root.matchMedia('(pointer: coarse)').matches ? 'Touche « Passer » en haut à droite pour sauter la scène.' : 'Échap pour passer.')), go);
       el.appendChild(gate);
       go.addEventListener('click', () => { unlocked = true; gate.remove(); begin(); });
       go.focus({ preventScroll: true });
