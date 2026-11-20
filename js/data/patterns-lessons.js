@@ -1,5 +1,6 @@
 /**
- * patterns-lessons.js — Leçons sur les 8 patrons de conception des annales.
+ * patterns-lessons.js — Leçons sur les 9 patrons de conception
+ * (les 8 des annales et Strategy, vu au TP 3).
  *
  * Chaque leçon : { id (= id de l'exercice de la Forge), name, family,
  *   problem, intention, image (moyen mnémotechnique), roles: [[rôle, dans le sujet, responsabilité]],
@@ -92,6 +93,19 @@
       mistakes: ['Tableau de Cercle au lieu de Forme : impossible d\'imbriquer des compositions.', 'Le composite n\'implémente pas l\'interface : on ne peut plus le traiter comme une forme.', 'Oublier le compteur et parcourir tout le tableau (cases null → NullPointerException).'],
     },
     {
+      id: 'strategy', name: 'Strategy', family: 'Comportement',
+      problem: 'Un objet doit pouvoir **changer d\'algorithme en cours de route** (un conducteur conduit tantôt prudemment, tantôt dangereusement). Une sous-classe par comportement le figerait à la création ; une cascade de `if` dans `drive()` obligerait à modifier la classe à chaque nouveau comportement.',
+      intention: 'Déléguer un comportement à un objet « stratégie » interchangeable, référencé par un attribut du contexte, pour pouvoir en changer à l\'exécution sans modifier le contexte.',
+      image: 'Le pilote automatique de la navette : on y glisse une cartouche « croisière » ou « évitement ». La navette ne sait pas ce que fait la cartouche, elle lui dit juste « pilote-moi ». Pour une nouvelle manœuvre, on grave une nouvelle cartouche.',
+      roles: [['Contexte', 'Driver', 'garde une référence vers la stratégie courante (behavior) et lui délègue le travail'], ['Stratégie (interface)', 'Drivable', 'déclare l\'algorithme : driving(Driver d)'], ['Stratégies concrètes', 'RecklessDriver, ResponsibleDriver', 'implémentent chacune une variante de l\'algorithme']],
+      uml: { classes: [box('D', 'Driver', 10, 10, ['- name : String', '- behavior : Drivable'], ['+ setBehavior(b : Drivable) : void', '+ drive() : void']), box('I', 'Drivable', 420, 10, [], ['+ driving(d : Driver) : void'], 'interface'), box('R', 'RecklessDriver', 240, 170, [], ['+ driving(d : Driver) : void']), box('S', 'ResponsibleDriver', 500, 170, [], ['+ driving(d : Driver) : void'])],
+        edges: [{ from: 'D', to: 'I', kind: 'navig', m2: '1', label: 'behavior' }, { from: 'R', to: 'I', kind: 'realize' }, { from: 'S', to: 'I', kind: 'realize' }] },
+      seq: { actors: [{ id: 't', label: ':Test' }, { id: 'd', label: 'alice:Driver' }, { id: 'r', label: ':RecklessDriver' }], items: [m('t', 'd', 'setBehavior(new RecklessDriver())'), m('t', 'd', 'drive()'), m('d', 'r', 'driving(this)'), m('r', 'd', 'getPointMalus()')] },
+      skeleton: 'public interface Drivable {\n    public void driving(Driver d);\n}\n\npublic class RecklessDriver implements Drivable {   // une stratégie concrète\n    public void driving(Driver d) {\n        d.getPointMalus().add(new Random().nextInt(101));\n    }\n}\n\npublic class Driver {                    // le contexte\n    private Drivable behavior;           // la stratégie courante (composition)\n    public void setBehavior(Drivable behavior) { this.behavior = behavior; }\n    public void drive() {\n        this.behavior.driving(this);     // délègue sans connaître l\'algorithme\n    }\n}\n// alice.setBehavior(new ResponsibleDriver()); alice.drive();',
+      cues: ['« doter le contexte d\'un comportement dont l\'algorithme est délégué à une autre classe »', '« modifier de manière dynamique le comportement d\'un objet au cours de son cycle de vie »', '« l\'algorithme est interchangeable »', '« le même conducteur peut avoir plusieurs types de conduite »'],
+      mistakes: ['Faire hériter RecklessDriver de Driver : le type de conduite serait figé à la création (un objet ne change pas de classe).', 'Écrire un if / else sur le type de conduite dans drive() : il faudrait modifier Driver à chaque nouveau comportement (principe ouvert / fermé violé).', 'Oublier de passer this à driving : la stratégie ne pourrait pas modifier les points du conducteur.', 'Typer l\'attribut behavior en RecklessDriver au lieu de Drivable.'],
+    },
+    {
       id: 'visiteur', name: 'Visiteur (Visitor)', family: 'Comportement',
       problem: 'On veut ajouter **de nouveaux traitements** (statistiques, temps moyen…) sur des objets **sans modifier leurs classes** à chaque fois.',
       intention: 'Séparer les algorithmes de traitement (dans un visiteur) des structures de données (les classes visitées), grâce à un double appel accept / visit.',
@@ -119,7 +133,7 @@
     },
   ];
 
-  const P = ['Singleton', 'Template Method', 'Fabrique', 'Adaptateur', 'Décorateur', 'Composite', 'Visiteur', 'Observateur'];
+  const P = ['Singleton', 'Template Method', 'Fabrique', 'Adaptateur', 'Décorateur', 'Composite', 'Visiteur', 'Observateur', 'Strategy'];
   const drill = [
     { id: 'pp1', q: 'La station ne doit avoir qu\'un seul journal de bord, accessible depuis tous les modules.', c: P, a: 0, why: 'Instance unique + accès global : Singleton.' },
     { id: 'pp2', q: 'Un rapport suit toujours trois étapes (collecter, analyser, publier), mais chaque type de rapport les réalise à sa façon. L\'ordre ne doit jamais changer.', c: P, a: 1, why: 'Squelette fixe dans la mère (final), étapes dans les filles : Template Method.' },
@@ -129,12 +143,14 @@
     { id: 'pp6', q: 'Un dossier contient des fichiers et d\'autres dossiers ; on veut calculer la taille de n\'importe lequel de la même façon.', c: P, a: 5, why: 'Arborescence où groupe et élément simple se traitent pareil : Composite.' },
     { id: 'pp7', q: 'On veut calculer plusieurs statistiques différentes sur des commandes sans ajouter une méthode à Commande pour chaque statistique.', c: P, a: 6, why: 'Nouveaux traitements sans modifier les classes visitées : Visiteur.' },
     { id: 'pp8', q: 'Quand la température du réacteur change, trois écrans doivent se mettre à jour automatiquement.', c: P, a: 7, why: 'Notification automatique des abonnés : Observateur.' },
+    { id: 'pp15', q: 'Un robot de maintenance passe du mode « économie » au mode « urgence » pendant sa ronde. On veut pouvoir ajouter d\'autres modes sans toucher à la classe Robot.', c: P, a: 8, why: 'Comportement interchangeable à l\'exécution, délégué à un objet référencé par un attribut : Strategy (TP 3).' },
     { id: 'pp9', q: 'Dans le Décorateur, VoitureAvecOption…', c: ['hérite de Voiture seulement', 'contient une Voiture seulement', 'hérite de Voiture ET contient une Voiture', 'implémente une interface Option'], a: 2, why: 'Elle doit être une Voiture (pour être décorée à son tour) et envelopper la voiture qu\'elle décore.' },
     { id: 'pp10', q: 'Dans le Composite, le tableau de FormeComplexe doit être de type…', c: ['Cercle[]', 'Forme[]', 'FormeComplexe[]', 'Object[]'], a: 1, why: 'Forme[] : il peut contenir des feuilles ET d\'autres composites.' },
     { id: 'pp11', q: 'Dans le Visiteur, la méthode accept(Visitor v) de Commande contient…', c: ['v.visit(this);', 'this.visit(v);', 'v.accept(this);', 'return v;'], a: 0, why: 'L\'objet visité se présente au visiteur : v.visit(this).' },
     { id: 'pp12', q: 'Dans l\'Adaptateur de A24, la classe Adaptatrice…', c: ['hérite de Monitoring', 'implémente InterfaceObjectif et compose Monitoring', 'est une interface', 'modifie Monitoring'], a: 1, why: 'Elle a la forme attendue (implements) et délègue à la classe existante (composition), comme le dit l\'énoncé.' },
     { id: 'pp13', q: 'Quel mot clé garantit, dans le Template Method, que le squelette ne sera pas modifié par les filles ?', c: ['static', 'abstract', 'final', 'private'], a: 2, why: 'final interdit la redéfinition de commander().' },
     { id: 'pp14', q: 'Dans le Singleton, pourquoi getInstance() est-elle static ?', c: ['Pour aller plus vite', 'Parce qu\'on n\'a aucun objet pour l\'appeler avant d\'avoir l\'instance', 'Pour pouvoir la redéfinir', 'Parce que le constructeur est privé'], a: 1, why: 'On l\'appelle par le nom de la classe : Panier.getInstance().' },
+    { id: 'pp16', q: 'Strategy et Visitor (TP 3) : quelle phrase est juste ?', c: ['Les deux ajoutent des traitements sans modifier les classes visitées', 'Strategy change dynamiquement le comportement d\'UN objet ; Visitor ajoute des traitements sur un ensemble d\'objets sans modifier leurs classes', 'Strategy repose sur accept / visit', 'Visitor impose un attribut behavior'], a: 1, why: 'C\'est la distinction faite dans l\'énoncé du TP 3.' },
   ];
 
   O.data.patternLessons = { lessons, drill, families: ['Création', 'Structure', 'Comportement'] };

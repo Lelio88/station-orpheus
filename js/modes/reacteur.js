@@ -1,12 +1,11 @@
 /**
  * reacteur.js — Module « Réacteur » : prédire compilation, exécution, affichage.
  *
- * Trois modes :
+ * Deux modes :
  *  - Entraînement infini : cas générés au hasard dans un univers ; bouclier
  *    de 3 points, combo qui multiplie l'XP. Le tirage vise une répartition
  *    réaliste des verdicts (beaucoup d'erreurs de compilation, comme au médian).
  *  - Dossiers : les cas des annales, en « combat de boss ».
- *  - Traces d'exceptions : QCM sur try/catch/finally (cours 7).
  * Toutes les réponses viennent de verdict-engine.js : rien n'est codé en dur.
  */
 (function (root) {
@@ -346,16 +345,6 @@
     show();
   }
 
-  // ---------- Traces d'exceptions ----------
-  function traces(view) {
-    const mount = h('div', { class: 'stack' });
-    O.util.add(view, O.ui.pageHead('Réacteur · exceptions', 'Suivre une exception dans la pile', 'Cours 7 : une exception interrompt le bloc en cours et remonte la pile des appels jusqu\'au premier catch compatible. finally s\'exécute toujours.', 'reacteur'), mount);
-    O.data.traces.forEach((t, i) => {
-      mount.appendChild(h('section', { class: 'panel' }, h('span', { class: 'eyebrow' }, 'Trace ' + (i + 1) + ' · ' + t.title),
-        O.ui.mcq({ q: t.q, code: t.code, c: t.c, a: t.a, why: t.why, onAnswer: (ok) => { record(ok, 1); O.store.gainXP(ok ? 12 : 2, 'Trace d\'exception'); } })));
-    });
-  }
-
   // ---------- Menu ----------
   function menu(view) {
     const s = O.store.state.verdict;
@@ -376,15 +365,12 @@
         return h('a', { class: 'list-item', href: '#reacteur--d-' + d.id },
           h('div', { class: 'l' }, h('span', { class: 't' }, d.title), h('span', { class: 'meta' }, d.src + ' · boss : ' + d.boss)),
           h('span', { class: 'pill-score ' + O.util.scoreClass(best) }, O.util.pct(best) + ' %'));
-      })),
-      h('h2', null, 'Exceptions'),
-      h('a', { class: 'list-item', href: '#reacteur--traces' }, h('div', { class: 'l' }, h('span', { class: 't' }, 'Traces d\'exceptions'), h('span', { class: 'meta' }, O.data.traces.length + ' programmes : try, catch, finally, throws, pile des appels')), h('span', { class: 'tag vega' }, 'Cours 7')));
+      })));
   }
 
   O.modes = O.modes || {};
   O.modes.reacteur = (view, param) => {
     if (!param) return menu(view);
-    if (param === 'traces') return traces(view);
     if (param.startsWith('t-')) return training(view, param.slice(2) === 'mix' ? null : param.slice(2));
     if (param.startsWith('d-')) return dossier(view, param.slice(2));
     return menu(view);

@@ -15,7 +15,8 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const page = readFileSync(join(root, 'index.html'), 'utf8');
 const head = page.slice(0, page.indexOf('<canvas'));
 const body = page.slice(page.indexOf('<canvas'));
-const html = '<!doctype html>\n<html lang="fr">\n<head>\n<meta charset="utf-8">\n' +
+// Le <meta charset> vient d'index.html (sa première ligne) : il n'est pas répété ici.
+const html = '<!doctype html>\n<html lang="fr">\n<head>\n' +
   '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n' +
   head + '</head>\n<body>\n' + body + '</body>\n</html>\n';
 writeFileSync(join(root, 'Station-Orpheus.html'), html);

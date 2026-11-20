@@ -21,11 +21,10 @@ const checkMcq = (where, q) => {
   assert.ok(q.why, where + ' : explication présente');
 };
 
-test('QCM des Archives, du Bureau et des traces bien formés', () => {
+test('QCM des Archives et du Bureau bien formés', () => {
   D.codex.forEach((c) => c.quiz.forEach((q, i) => checkMcq(c.id + '#' + i, q)));
   D.uml.decoder.forEach((q) => checkMcq(q.id, q));
   D.uml.translate.forEach((q) => checkMcq(q.id, q));
-  D.traces.forEach((q) => checkMcq(q.id, q));
   D.umlLessons.drill.forEach((q) => checkMcq(q.id, q));
 });
 

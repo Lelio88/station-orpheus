@@ -1,9 +1,11 @@
 /**
  * codex.js — Les Archives de VEGA : la théorie, chapitre par chapitre.
  *
- * Source : les 7 cours de LO02 (Concepts POO, Classe UML, Séquences, POO,
- * POO avancée, Collections, Exceptions), Bases du langage, Environnement Java,
+ * Source : les cours 1 à 6 de LO02 (Concepts POO, Classe UML, Séquences, POO,
+ * POO avancée, Collections), Bases du langage, Environnement Java,
+ * le TP 3 (Strategy, Visitor),
  * et les questions de cours des médians A09 → A25.
+ * Le cours 7 (Exceptions) est hors du programme du médian A26 : pas de chapitre.
  * Les définitions reprennent la formulation du cours quand elle existe ;
  * les encadrés « Pour la copie » donnent la phrase à écrire le jour J.
  *
@@ -301,6 +303,16 @@
         { t: 'p', s: '`Map` n\'hérite pas de `Collection` ; `Set`, `List`, `Queue` oui. Les objets d\'un `TreeSet` doivent être comparables (`implements Comparable`).' },
         { t: 'h', s: 'Généricité' },
         { t: 'p', s: 'Le type des éléments se donne entre chevrons : `List<Carte>`. La cohérence des types est **vérifiée à la compilation**, ce qui évite les transtypages et les ClassCastException. Les collections stockent des objets : pour des entiers, on utilise la classe enveloppe `Integer` (autoboxing automatique).' },
+        { t: 'h', s: 'Écrire sa propre classe générique' },
+        { t: 'p', s: 'Le type des données peut rester un **paramètre**, placé entre chevrons après le nom de la classe et désigné par une majuscule : `T` (Type), `E` (Element), `K` (Key), `V` (Value), `N` (Number). Il est fixé **à l\'instanciation** ; ensuite, l\'objet ne manipule que ce type.' },
+        { t: 'code', s: 'public class GererType<T> {\n    private T var;\n    public GererType(T var) { this.var = var; }\n    public T getVar() { return this.var; }\n    public void setVar(T var) { this.var = var; }\n}\n\nGererType<String> g1 = new GererType<String>("Hello world");\nGererType<Integer> g2 = new GererType<Integer>(12);\nString s = g1.getVar();      // pas de transtypage\ng1.setVar(12);               // ne compile pas : g1 manipule des String' },
+        { t: 'h', s: 'Le joker et les bornes' },
+        { t: 'table', head: ['Écriture', 'Accepte', 'Exemple dans Collection<E>'], rows: [
+          ['`<?>`', 'n\'importe quel type (classe ou interface)', '`containsAll(Collection<?> c)`'],
+          ['`<? extends E>`', '`E` **ou une de ses sous-classes** (borne haute : spécialisation)', '`addAll(Collection<? extends E> c)` : dans une `List<Animal>`, on peut ajouter une `List<Cheval>`'],
+          ['`<? super E>`', '`E` **ou une de ses super-classes** (borne basse : généralisation)', 'un `Comparator<? super E>` : un comparateur d\'Animal sait aussi trier des Chevaux'],
+        ] },
+        { t: 'trap', s: 'Une `List<Cheval>` **n\'est pas** une `List<Animal>`, même si Cheval hérite d\'Animal : `List<Animal> l = new ArrayList<Cheval>();` ne compile pas. C\'est précisément pour accepter ces listes qu\'on écrit `List<? extends Animal>`.' },
         { t: 'code', s: 'List<Carte> main = new ArrayList<Carte>();   // référence de type interface\nmain.add(new Carte(Valeur.AS, Couleur.PIQUE));\nCarte premiere = main.get(0);\n\nQueue<Carte> tas = new LinkedList<Carte>();\ntas.add(carte);                 // ajoute en fin de file\nCarte c = tas.poll();           // retire la tête (null si vide)\n\nMap<String, Joueur> parNom = new HashMap<String, Joueur>();\nparNom.put("Perceval", perceval);\nJoueur j = parNom.get("Perceval");\nfor (String nom : parNom.keySet()) { ... }' },
         { t: 'h', s: 'Parcourir une collection' },
         { t: 'code', s: '// 1. Itérateur : recommandé, permet de retirer pendant le parcours\nIterator<Carte> it = main.iterator();\nwhile (it.hasNext()) {\n    Carte c = it.next();\n    if (c.getValeur() == Valeur.SEPT) {\n        it.remove();\n    }\n}\n\n// 2. Boucle for étendue : simple parcours sans modification\nfor (Carte c : main) {\n    System.out.println(c);\n}' },
@@ -310,43 +322,13 @@
       quiz: [
         { q: 'Quelle interface garantit l\'absence de doublon ?', c: ['List', 'Set', 'Queue', 'Map'], a: 1, why: 'Set = ensemble mathématique.' },
         { q: 'Quelle méthode d\'Iterator permet de savoir s\'il reste un élément ?', c: ['next()', 'hasNext()', 'isEmpty()', 'size()'], a: 1, why: 'hasNext() ; next() renvoie l\'élément suivant et avance.' },
+        { q: 'Une méthode prend un paramètre `List<? extends Animal>`. Que peut-on lui passer ?', c: ['Seulement une List<Animal>', 'Une List<Animal> ou une List<Cheval> (Cheval hérite d\'Animal)', 'Une List<Object>', 'N\'importe quelle List'], a: 1, why: '<? extends Animal> accepte Animal et toutes ses sous-classes ; Object est une super-classe, c\'est <? super Animal> qui l\'accepterait.' },
         { q: '`Map<String, Joueur>` : que se passe-t-il si on fait deux `put` avec la même clé ?', c: ['Deux entrées', 'La seconde valeur remplace la première', 'Exception', 'Erreur de compilation'], a: 1, why: 'Chaque clé est unique et n\'est associée qu\'à un objet.' },
       ],
     },
 
     {
-      id: 'exceptions', num: '11', title: 'Les exceptions', exam: 'Cours 7 (à connaître si le chapitre est au programme du médian)',
-      blocks: [
-        { t: 'p', s: 'Une **exception** est un événement anormal qui survient pendant l\'exécution (division par zéro, référence nulle, fichier absent…). Quand elle est levée, l\'exécution en cours s\'interrompt et le programme **remonte la pile des appels** à la recherche d\'un gestionnaire. Si aucun n\'est trouvé, elle sort de `main` : la JVM affiche la pile et le programme s\'arrête.' },
-        { t: 'h', s: 'Trois familles (sous Throwable)' },
-        { t: 'table', head: ['Famille', 'Exemples', 'Catch or Specify ?'], rows: [
-          ['**Exceptions gérées** (sous-classes de Exception, hors RuntimeException)', 'FileNotFoundException, vos propres exceptions', 'oui, obligatoire'],
-          ['**Exceptions non gérées** (RuntimeException), liées à la JVM', 'NullPointerException, ClassCastException, ArithmeticException', 'non'],
-          ['**Erreurs** (Error), liées au système', 'OutOfMemoryError', 'non'],
-        ] },
-        { t: 'h', s: 'Catch or Specify' },
-        { t: 'p', s: 'Du code qui peut lever une exception gérée doit **soit l\'attraper** (`try/catch`), **soit spécifier** qu\'il la propage (`throws` dans la signature). Sinon : erreur de **compilation**.' },
-        { t: 'code', s: 'public class InvalidGameException extends Exception {     // créer son exception\n    public InvalidGameException(String msg) {\n        super(msg);\n    }\n}\n\npublic void creationPartie() throws InvalidGameException {  // Specify : throws (avec un s)\n    if (nbJoueurs < 2) {\n        throw new InvalidGameException("contraintes non respectées"); // lever : throw\n    }\n}\n\npublic static void main(String[] args) {\n    try {\n        partie.creationPartie();\n        System.out.println("Partie créée");      // sauté si exception\n    } catch (InvalidGameException e) {           // Catch\n        System.out.println("Erreur : " + e.getMessage());\n    } finally {\n        System.out.println("Toujours exécuté");  // exception ou non\n    }\n}' },
-        { t: 'list', items: [
-          '`throw` (sans s) : lève une instance d\'exception, dans le corps d\'une méthode.',
-          '`throws` (avec s) : dans la **déclaration** de la méthode, annonce qu\'elle propage.',
-          '`try` : instructions susceptibles de lever ; la levée interrompt le bloc.',
-          '`catch` : exécuté si l\'exception est du type du paramètre (ou d\'un sous-type). Plusieurs catch possibles, **du plus spécifique au plus général**.',
-          '`finally` : facultatif, exécuté dans tous les cas (fermeture d\'un fichier).',
-        ] },
-        { t: 'trap', s: 'Mettre `catch (Exception e)` **avant** `catch (MonException e)` est une erreur de compilation : le second catch est inatteignable. Toujours du spécifique au général.' },
-        { t: 'p', s: 'Compléments du cours : `catch (ExA | ExB e)` (catch pipe), `throws ExA, ExB`, chaînage (`new MathException("...", cause)` ou `e1.initCause(e)`), try-with-resources pour les objets `AutoCloseable`. `e.printStackTrace()` affiche la pile des appels.' },
-        { t: 'copy', s: 'Apport des exceptions : on sépare le code normal du traitement des erreurs, l\'exception remonte la pile jusqu\'au bloc choisi pour la traiter, et on peut chaîner les exceptions par causalité. Limite : surcharge de travail pour la JVM.' },
-      ],
-      quiz: [
-        { q: 'Différence entre throw et throws ?', c: ['Aucune', 'throw lève une exception ; throws déclare qu\'une méthode la propage', 'throws lève plusieurs exceptions', 'throw est réservé aux RuntimeException'], a: 1, why: 'throw dans le corps, throws dans la signature.' },
-        { q: 'Une méthode appelle du code qui lève une exception gérée, sans try ni throws :', c: ['Erreur de compilation', 'Erreur à l\'exécution seulement', 'L\'exception est ignorée', 'Ça marche'], a: 0, why: 'Règle Catch or Specify vérifiée par le compilateur.' },
-        { q: 'NullPointerException est…', c: ['une exception gérée (obligation de catch)', 'une exception non gérée (RuntimeException)', 'une Error', 'une erreur de compilation'], a: 1, why: 'Liée à la JVM, sous-classe de RuntimeException.' },
-      ],
-    },
-
-    {
-      id: 'uml-classes', num: '12', title: 'UML : le diagramme de classes', exam: 'Partie II de chaque médian (3 à 8 points)',
+      id: 'uml-classes', num: '11', title: 'UML : le diagramme de classes', exam: 'Partie II de chaque médian (3 à 8 points)',
       blocks: [
         { t: 'p', s: 'Le diagramme de classes donne une **vue logique et statique** du système : les classes et les liens entre elles, **sans notion de temps**. Une classe = un rectangle en trois parties : nom, attributs, opérations. On omet souvent getters/setters et constructeurs (les sujets le précisent).' },
         { t: 'vega', s: 'Chaque flèche, losange et multiplicité est **dessiné et expliqué un par un** dans le Bureau des plans, avec un entraînement « Reconnais la flèche ». Commence par là si la notation te pose problème.' },
@@ -398,7 +380,7 @@
     },
 
     {
-      id: 'uml-sequence', num: '13', title: 'UML : diagramme de séquence', exam: 'A11 II.2 et cours 3 (vue dynamique)',
+      id: 'uml-sequence', num: '12', title: 'UML : diagramme de séquence', exam: 'A11 II.2 et cours 3 (vue dynamique)',
       blocks: [
         { t: 'p', s: 'Le diagramme de séquence montre **comment** un cas d\'utilisation est réalisé par les objets du système : c\'est la partie algorithmique, avec la **notion d\'ordre et de temps**. Le diagramme de classes donne la structure ; le diagramme de séquence donne les échanges.' },
         { t: 'vega', s: 'Chaque élément (messages, retours, création, fragments loop/alt/opt/par/ref) est **dessiné et traduit en Java** dans le Bureau des plans, avec un entraînement.' },
@@ -428,7 +410,7 @@
     },
 
     {
-      id: 'uml-cas', num: '14', title: 'UML : cas d\'utilisation', exam: 'A15, A17, A18, A21, A22 (diagramme à proposer)',
+      id: 'uml-cas', num: '13', title: 'UML : cas d\'utilisation', exam: 'A15, A17, A18, A21, A22 (diagramme à proposer)',
       blocks: [
         { t: 'p', s: 'Le diagramme de cas d\'utilisation décrit **ce que** le système doit faire du point de vue de ses utilisateurs (exigences fonctionnelles), sans dire comment.' },
         { t: 'list', items: [
@@ -450,10 +432,10 @@
     },
 
     {
-      id: 'patrons', num: '15', title: 'Patrons de conception : vue d\'ensemble', exam: 'Partie III (7 à 9 points) — détails et entraînement à la Forge',
+      id: 'patrons', num: '14', title: 'Patrons de conception : vue d\'ensemble', exam: 'Partie III (7 à 9 points) — détails et entraînement à la Forge',
       blocks: [
         { t: 'vega', s: 'Bonne nouvelle, Cadet : dans tous les sujets, le patron est **expliqué dans l\'énoncé**. Personne ne te demande de le réciter. On te demande de **traduire l\'explication en code propre**. Il faut donc reconnaître la structure en dix secondes et connaître le squelette par cœur.' },
-        { t: 'link', href: '#forge--apprendre', s: 'Ouvrir les leçons détaillées des 8 patrons' },
+        { t: 'link', href: '#forge--apprendre', s: 'Ouvrir les leçons détaillées des 9 patrons' },
         { t: 'table', head: ['Patron', 'Intention en une ligne', 'Signature à reconnaître', 'Sujets'], rows: [
           ['Singleton', 'garantir une **instance unique**', 'constructeur privé, `private static` instance, `public static getInstance()`', 'A15, A24, A25'],
           ['Template Method', 'squelette d\'algorithme fixé dans la mère, étapes dans les filles', 'classe abstraite, méthode `final` qui appelle des méthodes `abstract`', 'A23, A25'],
@@ -461,6 +443,7 @@
           ['Adaptateur', 'faire utiliser une classe existante via l\'interface attendue', 'classe qui `implements` l\'interface cible et **compose** la classe adaptée', 'A19, A24'],
           ['Décorateur', 'ajouter des fonctionnalités dynamiquement, sans 2ⁿ sous-classes', 'hérite de la classe ET contient une référence vers elle', 'A22'],
           ['Composite', 'traiter pareil un objet simple et un groupe d\'objets', 'le composite implémente l\'interface ET contient des objets de cette interface', 'A11, A19, A21'],
+          ['Strategy', 'changer d\'algorithme à l\'exécution en le déléguant à un objet interchangeable', 'attribut typé par une interface (`private Drivable behavior;`) + méthode qui lui délègue', 'TP 3'],
           ['Visiteur', 'séparer les traitements des structures de données', '`accept(Visitor v) { v.visit(this); }`', 'A10, A12-A14, A17'],
           ['Observateur', 'prévenir automatiquement les objets abonnés d\'un changement', 'liste d\'observateurs, `notifyObservers()` appelle `update()`', 'P09'],
         ] },
@@ -470,6 +453,7 @@
       ],
       quiz: [
         { q: 'Quel patron utilise une méthode `final` qui appelle des méthodes abstraites ?', c: ['Singleton', 'Template Method', 'Composite', 'Adaptateur'], a: 1, why: 'La méthode squelette est final pour ne pas être redéfinie.' },
+        { q: 'Driver a un attribut `private Drivable behavior;` et `drive()` appelle `behavior.driving(this)`. Quel patron ?', c: ['Visiteur', 'Strategy', 'Template Method', 'Adaptateur'], a: 1, why: 'Le comportement est délégué à une stratégie interchangeable (TP 3).' },
         { q: 'Quel patron contient `v.visit(this);` ?', c: ['Observateur', 'Visiteur', 'Décorateur', 'Fabrique'], a: 1, why: 'accept(Visitor v) délègue au visiteur en lui passant l\'objet courant.' },
         { q: 'Une classe hérite de Voiture ET a un attribut de type Voiture : c\'est…', c: ['un Composite', 'un Décorateur', 'un Singleton', 'une erreur de conception'], a: 1, why: 'Le décorateur est une Voiture qui enveloppe une Voiture.' },
       ],

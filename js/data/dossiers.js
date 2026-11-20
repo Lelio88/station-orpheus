@@ -5,9 +5,6 @@
  * propre au sujet), intro, cases: [{ label, stmts }] }.
  * Les instructions suivent le DSL de verdict-engine.js ; les réponses ne sont
  * PAS écrites ici : le moteur les calcule (et tests/ vérifie A23 et A25).
- *
- * traces = exercices sur les exceptions, rédigés à la main (QCM) car le moteur
- * ne modélise pas try/catch : { id, title, code, q, c, a, why }.
  */
 (function (root) {
   'use strict';
@@ -131,58 +128,6 @@
         { label: 'cas 7', stmts: [d('Module', 'm3', c('Module', v('dr')))] },
         { label: 'cas 8', stmts: [d('Serre', 's', c('Serre', v('m1')))] },
       ],
-    },
-  ];
-
-  O.data.traces = [
-    {
-      id: 'tr-pile', title: 'Remonter la pile des appels',
-      code: 'public class Demo {\n    private int num, den;\n    public Demo(int num, int den) { this.num = num; this.den = den; }\n\n    public void methode3() {\n        System.out.println("Entrée 3");\n        System.out.println(this.num / this.den);\n        System.out.println("Sortie 3");\n    }\n    public void methode2() {\n        System.out.println("Entrée 2");\n        this.methode3();\n        System.out.println("Sortie 2");\n    }\n    public static void main(String[] args) {\n        Demo d = new Demo(1, 0);\n        try {\n            d.methode2();\n            System.out.println("Fin du try");\n        } catch (ArithmeticException e) {\n            System.out.println("Division par zéro");\n        }\n        System.out.println("Le programme continue");\n    }\n}',
-      q: 'Qu\'affiche ce programme ?',
-      c: ['Entrée 2 / Entrée 3 / Division par zéro / Le programme continue', 'Entrée 2 / Entrée 3 / Sortie 3 / Sortie 2 / Division par zéro / Le programme continue', 'Entrée 2 / Entrée 3 / Division par zéro / Sortie 3 / Sortie 2 / Fin du try / Le programme continue', 'Erreur de compilation : methode3 doit déclarer throws ArithmeticException'],
-      a: 0, why: 'La division lève une ArithmeticException dans methode3 : on sort immédiatement de methode3 puis de methode2 (pas de « Sortie »), on remonte la pile jusqu\'au catch du main. « Fin du try » est sauté. Après le catch, l\'exécution reprend normalement. ArithmeticException est une RuntimeException : aucun throws obligatoire.',
-    },
-    {
-      id: 'tr-finally', title: 'finally s\'exécute toujours',
-      code: 'try {\n    System.out.println("A");\n    Object o = "texte";\n    Integer i = (Integer) o;\n    System.out.println("B");\n} catch (ClassCastException e) {\n    System.out.println("C");\n} finally {\n    System.out.println("D");\n}\nSystem.out.println("E");',
-      q: 'Qu\'affiche ce fragment ?',
-      c: ['A B D E', 'A C D E', 'A C E', 'A C D puis le programme s\'arrête'],
-      a: 1, why: 'Le transtypage d\'une String en Integer lève ClassCastException : B est sauté, le catch affiche C, finally affiche D dans tous les cas, puis l\'exécution continue avec E.',
-    },
-    {
-      id: 'tr-noexc', title: 'Sans exception',
-      code: 'try {\n    System.out.println("A");\n} catch (Exception e) {\n    System.out.println("B");\n} finally {\n    System.out.println("C");\n}',
-      q: 'Qu\'affiche ce fragment ?',
-      c: ['A', 'A C', 'A B C', 'C'],
-      a: 1, why: 'Aucune exception : le catch n\'est pas exécuté, mais finally l\'est toujours.',
-    },
-    {
-      id: 'tr-ordre', title: 'L\'ordre des catch',
-      code: 'try {\n    partie.creationPartie();   // throws InvalidGameException\n} catch (Exception e) {\n    System.out.println("Problème");\n} catch (InvalidGameException e) {\n    System.out.println("Partie invalide");\n}',
-      q: 'Que se passe-t-il ? (InvalidGameException extends Exception)',
-      c: ['Affiche « Partie invalide » si l\'exception est levée', 'Affiche « Problème » si l\'exception est levée', 'Erreur de compilation : le second catch est inatteignable', 'Les deux messages s\'affichent'],
-      a: 2, why: 'Le catch(Exception) attrape déjà toutes les InvalidGameException : le second bloc ne peut jamais être atteint, le compilateur refuse. Il faut aller du plus spécifique au plus général.',
-    },
-    {
-      id: 'tr-specify', title: 'Catch or Specify',
-      code: 'public class Partie {\n    public void creationPartie() throws InvalidGameException {\n        throw new InvalidGameException("2 joueurs minimum");\n    }\n    public void lancer() {\n        this.creationPartie();\n    }\n}',
-      q: 'Ce code compile-t-il ? (InvalidGameException extends Exception)',
-      c: ['Oui', 'Non : lancer() doit attraper l\'exception ou déclarer throws InvalidGameException', 'Non : creationPartie() ne peut pas lever d\'exception', 'Oui, mais NullPointerException à l\'exécution'],
-      a: 1, why: 'InvalidGameException hérite de Exception (pas de RuntimeException) : c\'est une exception gérée, soumise à Catch or Specify. lancer() ne fait ni l\'un ni l\'autre.',
-    },
-    {
-      id: 'tr-propag', title: 'Propagation à travers deux méthodes',
-      code: 'public void m1() {\n    System.out.println("Entrée 1");\n    try {\n        m2();\n        System.out.println("Après m2");\n    } catch (InvalidGameException e) {\n        System.out.println("Attrapée : " + e.getMessage());\n    }\n    System.out.println("Sortie 1");\n}\npublic void m2() throws InvalidGameException {\n    System.out.println("Entrée 2");\n    throw new InvalidGameException("boum");\n}',
-      q: 'Qu\'affiche un appel à m1() ?',
-      c: ['Entrée 1 / Entrée 2 / Attrapée : boum / Sortie 1', 'Entrée 1 / Entrée 2 / Après m2 / Sortie 1', 'Entrée 1 / Entrée 2 / Attrapée : boum / Après m2 / Sortie 1', 'Entrée 1 / Entrée 2 puis arrêt du programme'],
-      a: 0, why: 'm2 propage (throws) l\'exception ; m1 l\'attrape. « Après m2 » est sauté car l\'exception interrompt le bloc try. Après le catch, m1 continue : « Sortie 1 ».',
-    },
-    {
-      id: 'tr-npe', title: 'La référence nulle',
-      code: 'Animal a = null;\ntry {\n    a.crier();\n    System.out.println("Cri poussé");\n} catch (NullPointerException e) {\n    System.out.println("Pas d\'animal");\n}',
-      q: 'Qu\'affiche ce fragment ?',
-      c: ['Un animal émet un cri / Cri poussé', 'Pas d\'animal', 'Erreur de compilation : a n\'est pas initialisée', 'Rien'],
-      a: 1, why: 'a vaut null (elle est bien initialisée, à null) : l\'appel lève NullPointerException, attrapée par le catch.',
     },
   ];
 })(window);

@@ -17,6 +17,7 @@
     adaptateur: '`class Adaptatrice implements InterfaceObjectif { private Monitoring m; }`',
     decorateur: '`class VoitureAvecOption extends Voiture { private Voiture voiture; }`',
     composite: '`class FormeComplexe implements Forme { private Forme[] formes; }`',
+    strategy: '`private Drivable behavior;` + `drive() { this.behavior.driving(this); }`',
     visiteur: '`public void accept(Visitor v) { v.visit(this); }`',
     observateur: '`notifyObservers()` appelle `o.update(this, arg)` sur chaque observateur',
   };
